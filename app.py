@@ -215,8 +215,8 @@ def generate_structured_notes_with_gemini(_srt_content: str, file_name: str):
 
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="SRT 요약 노트 생성기", page_icon="📝")
-st.title("📝 SRT 파일 상세 요약 노트 생성기")
+st.set_page_config(page_title="요약 노트 생성기", page_icon="📝")
+st.title("📝 요약 노트 생성기")
 
 if 'current_folder_id' not in st.session_state:
     st.session_state.current_folder_id = None
