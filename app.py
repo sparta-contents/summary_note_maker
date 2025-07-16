@@ -13,15 +13,15 @@ import google.generativeai as genai
 
 # --- API 및 서비스 계정 설정 ---
 
-# Streamlit 배포 환경에서는 secrets에서, 로컬에서는 파일에서 자격 증명 로드
+# Streamlit 배포 환경에서는 secrets에서 자격 증명 로드
 SERVICE_ACCOUNT_FILE = "credentials.json"
 if "GOOGLE_CREDENTIALS_JSON" in st.secrets:
     # Streamlit Cloud의 secrets에서 JSON 문자열을 가져와 파일로 씀
     creds_json_str = st.secrets["GOOGLE_CREDENTIALS_JSON"]
     with open(SERVICE_ACCOUNT_FILE, "w") as f:
         f.write(creds_json_str)
-elif not os.path.exists(SERVICE_ACCOUNT_FILE):
-    st.error("오류: 'credentials.json' 파일을 찾을 수 없습니다. 로컬 환경에서 실행하는 경우 이 파일을 프로젝트 루트에 배치하세요.")
+else:
+    st.error("오류: Streamlit secrets에 GOOGLE_CREDENTIALS_JSON이 없습니다. .streamlit/secrets.toml 파일을 확인하세요.")
     st.stop()
 
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
