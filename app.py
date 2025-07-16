@@ -12,18 +12,6 @@ from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 import google.generativeai as genai
 
 # --- API 및 서비스 계정 설정 ---
-
-# Streamlit 배포 환경에서는 secrets에서 자격 증명 로드
-SERVICE_ACCOUNT_FILE = "credentials.json"
-if "GOOGLE_CREDENTIALS_JSON" in st.secrets:
-    # Streamlit Cloud의 secrets에서 JSON 문자열을 가져와 파일로 씀
-    creds_json_str = st.secrets["GOOGLE_CREDENTIALS_JSON"]
-    with open(SERVICE_ACCOUNT_FILE, "w") as f:
-        f.write(creds_json_str)
-else:
-    st.error("오류: Streamlit secrets에 GOOGLE_CREDENTIALS_JSON이 없습니다. .streamlit/secrets.toml 파일을 확인하세요.")
-    st.stop()
-
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 # Streamlit Secrets에서 Gemini API 키 가져오기
@@ -35,19 +23,28 @@ except (KeyError, AttributeError):
     st.info("`[api_keys]` 섹션 아래에 `GEMINI_API_KEY='...'` 형식으로 키를 추가해주세요.")
     st.stop()
 
-# --- Google Drive 관련 함수 ---
 
+# --- Google Drive 관련 함수 ---
 @st.cache_resource
 def get_drive_service():
     """서비스 계정으로 Google Drive API 서비스 객체를 생성합니다."""
     try:
-        creds = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=DRIVE_SCOPES
+        creds = service_account.Credentials.from_service_account_info(
+            st.secrets["google_service_account"], scopes=DRIVE_SCOPES
         )
         return build("drive", "v3", credentials=creds)
     except Exception as e:
         st.error(f"Drive 서비스 생성 중 오류: {e}")
         return None
+
+# Streamlit Secrets에서 Gemini API 키 가져오기
+try:
+    GEMINI_API_KEY = st.secrets["api_keys"]["GEMINI_API_KEY"]
+    genai.configure(api_key=GEMINI_API_KEY)
+except (KeyError, AttributeError):
+    st.error("오류: .streamlit/secrets.toml 파일에 Gemini API 키가 설정되지 않았습니다.")
+    st.info("`[api_keys]` 섹션 아래에 `GEMINI_API_KEY='...'` 형식으로 키를 추가해주세요.")
+    st.stop()
 
 def extract_folder_id_from_url(url: str):
     """Google Drive URL에서 폴더 ID를 추출합니다."""
