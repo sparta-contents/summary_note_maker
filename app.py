@@ -55,13 +55,14 @@ def extract_folder_id_from_url(url: str):
     return None
 
 def list_files_in_folder(service, folder_id: str):
-    """폴더 안의 파일 목록을 가져옵니다."""
+    """폴더 안의 파일 목록을 가져옵니다. (이름순으로 정렬)"""
     try:
         query = f"'{folder_id}' in parents and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
         results = service.files().list(
             q=query, corpora='allDrives', includeItemsFromAllDrives=True,
             supportsAllDrives=True, pageSize=500,
-            fields="files(id, name, mimeType)"
+            fields="files(id, name, mimeType)",
+            orderBy="name"  # API 레벨에서 이름순으로 정렬
         ).execute()
         return results.get("files", []), None
     except Exception as e:
@@ -246,6 +247,7 @@ if drive_service:
                     st.session_state.drive_files = []
                 else:
                     srt_files = [f for f in files if f['name'].lower().endswith('.srt')]
+                    # API에서 이미 이름순으로 정렬되었으므로, 여기서는 정렬이 필요 없음
                     st.session_state.drive_files = srt_files
                     if not srt_files:
                         st.warning("폴더에 .srt 파일이 없습니다.")
@@ -258,11 +260,14 @@ if drive_service:
     if st.session_state.drive_files:
         srt_files = st.session_state.drive_files
 
-        file_options = {f['name']: f['id'] for f in srt_files}
-        
+        # 이름순 정렬
+        sorted_srt_files = sorted(srt_files, key=lambda x: x['name'])
+        file_options = {f['name']: f['id'] for f in sorted_srt_files}
+        file_names_sorted = list(file_options.keys())
+
         selected_file_name = st.radio(
             "요약 노트를 생성할 파일을 선택하세요.",
-            options=list(file_options.keys()),
+            options=file_names_sorted,
             index=None,
             key="file_selector"
         )
@@ -303,14 +308,16 @@ if drive_service:
                 if not parent_folder_id:
                     st.error("현재 폴더 ID를 찾을 수 없어 작업을 시작할 수 없습니다.")
                 else:
-                    with st.spinner("'요약노트' 폴더 확인 및 생성 중..."):
+                    with st.spinner("'요���노트' 폴더 확인 및 생성 중..."):
                         target_folder_id = get_or_create_folder(drive_service, parent_folder_id, "요약노트")
 
                     results_container = st.container()
                     progress_bar = st.progress(0, text="전체 요약 작업 준비 중...")
-                    total_files = len(file_options)
-
-                    for i, (file_name, file_id) in enumerate(file_options.items()):
+                    
+                    # 역순으로 정렬된 파일 목록을 기준으로 처리
+                    total_files = len(file_names_in_reverse_order)
+                    for i, file_name in enumerate(file_names_in_reverse_order):
+                        file_id = file_options[file_name]
                         progress_text = f"({i+1}/{total_files}) '{file_name}' 처리 중..."
                         progress_bar.progress((i + 1) / total_files, text=progress_text)
 
