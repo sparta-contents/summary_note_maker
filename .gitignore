@@ -1,0 +1,20 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Secrets - 절대 Git에 올리면 안 됩니다!
+credentials.json
+.streamlit/
+.env
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# 데이터 및 결과 파일 (예시)
+*.srt
+*.json
