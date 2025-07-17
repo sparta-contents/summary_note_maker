@@ -344,13 +344,15 @@ if drive_service:
                         output_file_name = os.path.splitext(file_name)[0] + ".json"
 
                         try:
-                            file_link = upload_json_to_drive(drive_service, target_folder_id, output_file_name, json_data)
-                            results_container.success(f"✅ '{output_file_name}' 생성 완료! [Google Drive에서 보기]({file_link})")
+                            upload_json_to_drive(drive_service, target_folder_id, output_file_name, json_data)
+                            results_container.success(f"✅ '{output_file_name}' 생성 완료!")
                         except Exception as e:
                             results_container.error(f"❌ '{output_file_name}' 업로드 실패: {e}")
 
                     progress_bar.empty()
                     st.success("모든 파일 처리가 완료되었습니다.")
+                    folder_url = f"https://drive.google.com/drive/folders/{target_folder_id}"
+                    st.link_button("생성된 '요약노트' 폴더 바로가기", url=folder_url)
     
     if st.session_state.get('generated_json'):
         st.success(f"요약 노트 생성이 완료되었습니다!")
@@ -378,10 +380,11 @@ if drive_service:
                         target_folder_id = get_or_create_folder(drive_service, parent_folder_id, "요약노트")
                     
                     with st.spinner(f"`{output_file_name}` 파일 업로드 중..."):
-                        file_link = upload_json_to_drive(drive_service, target_folder_id, output_file_name, json_data)
+                        upload_json_to_drive(drive_service, target_folder_id, output_file_name, json_data)
                     
                     st.success("Google Drive에 성공적으로 저장되었습니다!")
-                    st.link_button("저장된 파일 보기", url=file_link)
+                    folder_url = f"https://drive.google.com/drive/folders/{target_folder_id}"
+                    st.link_button("저장된 폴더 보기", url=folder_url)
                 else:
                     st.error("현재 폴더 ID를 찾을 수 없어 저장할 수 없습니다.")
 else:
