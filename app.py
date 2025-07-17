@@ -314,9 +314,9 @@ if drive_service:
                     results_container = st.container()
                     progress_bar = st.progress(0, text="전체 요약 작업 준비 중...")
                     
-                    # 역순으로 정렬된 파일 목록을 기준으로 처리
-                    total_files = len(file_names_in_reverse_order)
-                    for i, file_name in enumerate(file_names_in_reverse_order):
+                    # 모든 파일을 이름순으로 처리
+                    total_files = len(file_names_sorted)
+                    for i, file_name in enumerate(file_names_sorted):
                         file_id = file_options[file_name]
                         progress_text = f"({i+1}/{total_files}) '{file_name}' 처리 중..."
                         progress_bar.progress((i + 1) / total_files, text=progress_text)
